@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id(libs.plugins.kotlin.parcelize.get().pluginId)
 }
 
 android {
@@ -38,11 +39,28 @@ android {
 }
 
 dependencies {
+    // 核心依赖
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
+
+    // Compose依赖
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.activity)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // ViewModel依赖
+    implementation(libs.androidx.viewmodel)
+    implementation(libs.androidx.viewmodel.compose)
+
+    // 网络请求依赖
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp)
+
+    // 测试依赖
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
