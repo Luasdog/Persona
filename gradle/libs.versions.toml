@@ -11,15 +11,20 @@ activity = "1.8.0"
 constraintlayout = "2.1.4"
 
 # 新增依赖版本
-#composeCompiler = "1.5.3"
+#composeCompiler = "1.5.8"
 composeUi = "1.5.1"
-composeMaterial3 = "1.1.2"
+composeMaterial3 = "1.2.0"
 composeUiTooling = "1.5.1"
 composeActivity = "1.8.0"
 viewModel = "2.6.1"
 retrofit = "2.9.0"
 okhttp = "5.0.0-alpha.11"
 gson = "2.10.1"
+
+# Hilt依赖
+hilt = "2.48.1"
+hiltAndroidCompiler = "2.48.1"
+hiltNavigationCompose = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +38,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 
 # 新增依赖库
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "composeUi" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "composeUi" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "composeUiTooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "composeUi" }
@@ -43,7 +49,15 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+
+hilt-android = { id = "dagger.hilt.android.plugin", version = "hilt" }
+hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
