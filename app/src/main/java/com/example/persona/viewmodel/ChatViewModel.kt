@@ -30,13 +30,13 @@ class ChatViewModel @Inject constructor(
     init {
         loadMessages()
         loadContactInfo()
+        markAsRead()
     }
 
     private fun loadMessages() {
         viewModelScope.launch {
             // Initially load messages
-            _messages.value = contactRepository.getMessages(chatId)
-            // In a real app, we would collect a Flow from repository
+            refreshMessages()
         }
     }
     
@@ -44,6 +44,12 @@ class ChatViewModel @Inject constructor(
         val contact = contactRepository.getContactById(chatId)
         contact?.let {
             _contactName.value = it.name
+        }
+    }
+    
+    private fun markAsRead() {
+        viewModelScope.launch {
+            contactRepository.markAsRead(chatId)
         }
     }
 
@@ -66,7 +72,9 @@ class ChatViewModel @Inject constructor(
     }
     
     private suspend fun refreshMessages() {
-        _messages.value = contactRepository.getMessages(chatId)
+        // Use toList() to create a new List instance, forcing StateFlow to emit a change
+        _messages.value = contactRepository.getMessages(chatId).toList()
+        markAsRead() // Ensure we mark as read when seeing new messages while open
     }
 
     // Mock AI Logic - This will be replaced by LLM API later

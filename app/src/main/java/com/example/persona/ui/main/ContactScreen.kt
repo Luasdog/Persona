@@ -9,19 +9,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.model.Contact
-import com.example.persona.utils.MockData
+import com.example.persona.viewmodel.ContactViewModel
 
 @Composable
-fun ContactScreen() {
-    // Contact list only, FAB removed as it is now in MainScreen or can be kept here if we want "Add Contact" specifically
-    // But the requirement was to separate social plaza and keep contacts clean.
-    // The "Add Persona" FAB is now on MainScreen when on Contact tab.
-    
+fun ContactScreen(onContactClick: (String) -> Unit = {}) {
+    val viewModel: ContactViewModel = hiltViewModel()
+    val contacts by viewModel.contacts.collectAsState()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -33,8 +35,8 @@ fun ContactScreen() {
             )
         }
         
-        items(MockData.contacts) { contact ->
-            ContactItem(contact = contact, onClick = { /* TODO: View Detail */ })
+        items(contacts) { contact ->
+            ContactItem(contact = contact, onClick = { onContactClick(contact.id) })
             Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
         }
     }

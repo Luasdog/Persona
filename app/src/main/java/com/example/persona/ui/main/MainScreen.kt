@@ -91,7 +91,11 @@ fun MainScreen(onLogout: () -> Unit) {
                 SocialScreen()
             }
             composable(Screen.Contacts.route) {
-                ContactScreen()
+                ContactScreen(
+                    onContactClick = { chatId ->
+                        navController.navigate("chat_detail/$chatId")
+                    }
+                )
             }
             composable(Screen.Profile.route) {
                 ProfileScreen(onLogout = onLogout)

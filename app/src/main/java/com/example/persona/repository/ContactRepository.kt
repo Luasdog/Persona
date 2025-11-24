@@ -79,6 +79,18 @@ class ContactRepository @Inject constructor() {
         )
         saveMessage(chatId, newMessage)
     }
+    
+    fun markAsRead(chatId: String) {
+        _chatSessions.update { sessions ->
+            sessions.map { session ->
+                if (session.id == chatId) {
+                    session.copy(unreadCount = 0)
+                } else {
+                    session
+                }
+            }
+        }
+    }
 
     private fun saveMessage(chatId: String, message: Message) {
         if (!_messages.containsKey(chatId)) {
@@ -90,7 +102,12 @@ class ContactRepository @Inject constructor() {
         _chatSessions.update { sessions ->
             sessions.map { session ->
                 if (session.id == chatId) {
-                    session.copy(lastMessage = message.text, timestamp = "刚刚")
+                    val unreadIncrement = if (!message.isFromUser) 1 else 0 // AI 发送时增加未读
+                    session.copy(
+                        lastMessage = message.text, 
+                        timestamp = "刚刚",
+                        unreadCount = session.unreadCount + unreadIncrement
+                    )
                 } else {
                     session
                 }

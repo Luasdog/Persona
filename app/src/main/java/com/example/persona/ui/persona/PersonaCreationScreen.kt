@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.viewmodel.PersonaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,7 +20,7 @@ fun PersonaCreationScreen(
     onBackClick: () -> Unit,
     onPersonaCreated: () -> Unit
 ) {
-    val viewModel: PersonaViewModel = viewModel()
+    val viewModel: PersonaViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
     
     var name by remember { mutableStateOf("") }
