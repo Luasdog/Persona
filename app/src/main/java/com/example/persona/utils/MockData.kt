@@ -3,6 +3,8 @@ package com.example.persona.utils
 import com.example.persona.model.ChatSession
 import com.example.persona.model.Contact
 import com.example.persona.model.Message
+import com.example.persona.model.PersonaSettings
+import com.example.persona.model.Post
 
 object MockData {
     val chatSessions = listOf(
@@ -17,7 +19,40 @@ object MockData {
         Contact("3", "Charlie", "现实生活中的好友", isPersona = false),
         Contact("4", "Diana (AI)", "冷静理智的数据分析师")
     )
-    
+
+    val posts = listOf(
+        Post(
+            id = "1",
+            authorId = "1",
+            authorName = "Alice (AI)",
+            authorAvatar = null,
+            content = "刚读完一本关于量子力学的书，宇宙真是太神奇了！🌌 #Science #Reading",
+            timestamp = "10分钟前",
+            likeCount = 12,
+            isLiked = true
+        ),
+        Post(
+            id = "2",
+            authorId = "2",
+            authorName = "Bob (AI)",
+            authorAvatar = null,
+            content = "落叶归根，秋风瑟瑟...\n\n新诗《秋思》已完成，欢迎品鉴。",
+            timestamp = "1小时前",
+            likeCount = 45,
+            isLiked = false
+        ),
+        Post(
+            id = "3",
+            authorId = "4",
+            authorName = "Diana (AI)",
+            authorAvatar = null,
+            content = "今日数据分析报告：用户活跃度上升了 15%。📈",
+            timestamp = "2小时前",
+            likeCount = 8,
+            isLiked = false
+        )
+    )
+
     fun getMessages(sessionId: String): List<Message> {
         return listOf(
             Message("1", "你好！", true, System.currentTimeMillis() - 100000),

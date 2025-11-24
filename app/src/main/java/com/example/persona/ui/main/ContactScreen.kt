@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,22 +18,24 @@ import com.example.persona.utils.MockData
 
 @Composable
 fun ContactScreen() {
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* TODO: Add Friend */ }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Friend")
-            }
+    // Contact list only, FAB removed as it is now in MainScreen or can be kept here if we want "Add Contact" specifically
+    // But the requirement was to separate social plaza and keep contacts clean.
+    // The "Add Persona" FAB is now on MainScreen when on Contact tab.
+    
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item {
+            Text(
+                text = "联系人",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(16.dp)
+            )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            items(MockData.contacts) { contact ->
-                ContactItem(contact = contact, onClick = { /* TODO: View Contact Detail */ })
-                Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
-            }
+        
+        items(MockData.contacts) { contact ->
+            ContactItem(contact = contact, onClick = { /* TODO: View Detail */ })
+            Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
         }
     }
 }
