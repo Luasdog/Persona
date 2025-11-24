@@ -5,20 +5,19 @@ import com.example.persona.model.LoginRequest
 import com.example.persona.model.RegisterRequest
 import com.example.persona.model.response.BaseResponse
 import com.example.persona.model.response.LoginResponse
-import com.example.persona.network.RetrofitClient
+import com.example.persona.network.MockApiService
 import com.example.persona.utils.PreferenceManager
 import javax.inject.Inject
-import com.example.persona.network.MockApiService
 
 class AuthRepository @Inject constructor(
     private val context: Context
 ) {
-//    private val apiService = RetrofitClient.apiService
-    private val apiService = MockApiService() // 使用模拟API服务代替实际网络请求
+    // 使用模拟API服务
+    private val apiService = MockApiService() 
     private val preferenceManager by lazy { PreferenceManager(context) }
 
-    suspend fun login(email: String, password: String): BaseResponse<LoginResponse> {
-        val request = LoginRequest(email, password)
+    suspend fun login(emailOrUsername: String, password: String): BaseResponse<LoginResponse> {
+        val request = LoginRequest(emailOrUsername, password)
         return try {
             val response = apiService.login(request)
             if (response.success && response.data != null) {
@@ -28,7 +27,6 @@ class AuthRepository @Inject constructor(
             }
             response
         } catch (e: Exception) {
-            // 网络请求失败时的处理
             BaseResponse(false, e.message ?: "登录失败", null)
         }
     }
@@ -38,14 +36,36 @@ class AuthRepository @Inject constructor(
         return try {
             val response = apiService.register(request)
             if (response.success && response.data != null) {
-                // 保存用户信息和token
                 preferenceManager.saveToken(response.data.token)
                 preferenceManager.saveUser(response.data.user)
             }
             response
         } catch (e: Exception) {
-            // 网络请求失败时的处理
             BaseResponse(false, e.message ?: "注册失败", null)
+        }
+    }
+
+    suspend fun sendVerificationCode(email: String): BaseResponse<Unit> {
+        return try {
+            apiService.sendVerificationCode(email)
+        } catch (e: Exception) {
+            BaseResponse(false, e.message ?: "发送验证码失败", null)
+        }
+    }
+    
+    suspend fun verifyCode(email: String, code: String): Boolean {
+        return try {
+            apiService.verifyCode(email, code)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun resetPassword(email: String, newPassword: String): BaseResponse<Unit> {
+        return try {
+            apiService.resetPassword(email, newPassword)
+        } catch (e: Exception) {
+            BaseResponse(false, e.message ?: "重置密码失败", null)
         }
     }
 

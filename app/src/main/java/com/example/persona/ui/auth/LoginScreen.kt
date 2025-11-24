@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,13 +31,14 @@ import com.example.persona.viewmodel.AuthViewModel
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToRegister: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit
 ) {
     val viewModel: AuthViewModel = viewModel()
     val isLoading by viewModel.isLoading.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
-    var email by remember { mutableStateOf("") }
+    var emailOrUsername by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
@@ -71,10 +73,10 @@ fun LoginScreen(
         }
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("邮箱") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            value = emailOrUsername,
+            onValueChange = { emailOrUsername = it },
+            label = { Text("邮箱或用户名") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -88,13 +90,23 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.fillMaxWidth()
         )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // 忘记密码按钮
+        TextButton(
+            onClick = onNavigateToForgotPassword,
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text("忘记密码？")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.login(email, password) },
+            onClick = { viewModel.login(emailOrUsername, password) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading && email.isNotEmpty() && password.isNotEmpty()
+            enabled = !isLoading && emailOrUsername.isNotEmpty() && password.isNotEmpty()
         ) {
             if (isLoading) {
                 CircularProgressIndicator(color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
