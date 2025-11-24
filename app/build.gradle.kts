@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.example.persona"
-    compileSdk = 34 // Corrected to stable SDK
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.persona"
         minSdk = 23
-        targetSdk = 34 // Corrected to stable SDK
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -39,10 +39,6 @@ android {
     buildFeatures {
         compose = true
     }
-    // Since you are using Kotlin 2.0.21, you should use the new Compose compiler plugin or configure it here if not using the plugin block
-    // composeOptions {
-    //    kotlinCompilerExtensionVersion = "1.5.8" // This is for older Kotlin versions (pre 2.0)
-    // }
 }
 
 dependencies {
@@ -52,7 +48,6 @@ dependencies {
     implementation(libs.material)
 
     // Compose依赖
-    // Ensure BOM is used for version alignment if possible, but manual versions are fine if they match
     implementation(platform("androidx.compose:compose-bom:2024.04.01")) 
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -64,6 +59,9 @@ dependencies {
     // ViewModel依赖
     implementation(libs.androidx.viewmodel)
     implementation(libs.androidx.viewmodel.compose)
+    
+    // Navigation依赖
+    implementation(libs.androidx.navigation.compose)
 
     // 网络请求依赖
     implementation(libs.retrofit)
