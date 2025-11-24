@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.persona.model.Post
 import com.example.persona.utils.MockData
 
@@ -53,8 +54,17 @@ fun SocialPostItem(post: Post) {
                     modifier = Modifier.size(40.dp).clip(CircleShape),
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Person, contentDescription = null)
+                    if (post.authorAvatar != null) {
+                        AsyncImage(
+                            model = post.authorAvatar,
+                            contentDescription = "Author Avatar",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Person, contentDescription = null)
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))

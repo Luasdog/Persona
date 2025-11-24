@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.persona.viewmodel.PersonaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,9 +28,8 @@ fun PersonaCreationScreen(
     var personality by remember { mutableStateOf("") }
     var backstory by remember { mutableStateOf("") }
     var tone by remember { mutableStateOf("") } // e.g. Casual, Formal
+    var avatarUrl by remember { mutableStateOf<String?>(null) }
 
-    // Fill state if editing existing (omitted for now, assuming create new)
-    
     // Observe AI generation
     LaunchedEffect(uiState.generatedSettings) {
         uiState.generatedSettings?.let {
@@ -37,6 +37,7 @@ fun PersonaCreationScreen(
             personality = it.personality
             backstory = it.backstory
             tone = it.tone
+            avatarUrl = it.avatarUrl
             viewModel.consumeGeneratedSettings()
         }
     }
@@ -72,6 +73,17 @@ fun PersonaCreationScreen(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
+            
+            // 头像展示
+            if (avatarUrl != null) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+            }
 
             OutlinedTextField(
                 value = name,
@@ -108,7 +120,7 @@ fun PersonaCreationScreen(
 
             Button(
                 onClick = {
-                    viewModel.createPersona(name, personality, backstory, tone)
+                    viewModel.createPersona(name, personality, backstory, tone, avatarUrl)
                     onPersonaCreated()
                 },
                 modifier = Modifier.fillMaxWidth(),

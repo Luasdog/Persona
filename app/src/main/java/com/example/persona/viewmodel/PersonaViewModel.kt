@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.persona.model.Contact
 import com.example.persona.model.PersonaSettings
 import com.example.persona.repository.ContactRepository
+import com.example.persona.utils.MockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ class PersonaViewModel @Inject constructor(
             // Mock AI generation
             val mockPersona = PersonaSettings(
                 name = "Nova",
+                avatarUrl = MockData.getRandomAvatar(), // AI 生成时随机分配一个头像
                 personality = "Curious, Witty",
                 backstory = "A digital explorer originating from the lost data fragments of the old internet.",
                 tone = "Playful"
@@ -49,15 +51,19 @@ class PersonaViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(generatedSettings = null)
     }
 
-    fun createPersona(name: String, personality: String, backstory: String, tone: String) {
+    fun createPersona(name: String, personality: String, backstory: String, tone: String, avatarUrl: String? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             delay(500) // Simulate processing
             
+            // 如果没有指定头像，随机分配一个（如果是手动创建的情况）
+            val finalAvatarUrl = avatarUrl ?: MockData.getRandomAvatar()
+            
             val newContact = Contact(
                 id = System.currentTimeMillis().toString(),
                 name = name,
-                bio = personality, // 简单映射
+                bio = personality, 
+                avatarUrl = finalAvatarUrl,
                 isPersona = true
             )
             
