@@ -6,35 +6,40 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.persona.model.Contact
-import com.example.persona.utils.MockData
+import com.example.persona.viewmodel.ContactViewModel
 
 @Composable
-fun ContactScreen() {
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* TODO: Add Friend */ }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Friend")
-            }
+fun ContactScreen(onContactClick: (String) -> Unit = {}) {
+    val viewModel: ContactViewModel = hiltViewModel()
+    val contacts by viewModel.contacts.collectAsState()
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item {
+            Text(
+                text = "联系人",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(16.dp)
+            )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            items(MockData.contacts) { contact ->
-                ContactItem(contact = contact, onClick = { /* TODO: View Contact Detail */ })
-                Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
-            }
+        
+        items(contacts) { contact ->
+            ContactItem(contact = contact, onClick = { onContactClick(contact.id) })
+            Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
         }
     }
 }
@@ -54,12 +59,21 @@ fun ContactItem(contact: Contact, onClick: () -> Unit) {
                 .clip(CircleShape),
             color = if (contact.isPersona) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.secondaryContainer
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Person,
+            if (contact.avatarUrl != null) {
+                AsyncImage(
+                    model = contact.avatarUrl,
                     contentDescription = "Avatar",
-                    tint = if (contact.isPersona) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
+            } else {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Avatar",
+                        tint = if (contact.isPersona) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
             }
         }
 

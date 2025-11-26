@@ -13,8 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.model.Message
-import com.example.persona.utils.MockData
+import com.example.persona.viewmodel.ChatViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,13 +23,10 @@ fun ChatDetailScreen(
     chatId: String,
     onBackClick: () -> Unit
 ) {
-    // Mock getting contact name (in real app, fetch from DB/Repo)
-    val session = MockData.chatSessions.find { it.id == chatId }
-    val contactName = session?.contactName ?: "Unknown"
+    val viewModel: ChatViewModel = hiltViewModel()
+    val messages by viewModel.messages.collectAsState()
+    val contactName by viewModel.contactName.collectAsState()
     
-    // Mock messages state
-    // In a real app, this would come from a ViewModel observing a DB or Network flow
-    var messages by remember { mutableStateOf(MockData.getMessages(chatId)) }
     var inputText by remember { mutableStateOf("") }
     
     // List state to control scrolling
@@ -68,7 +66,7 @@ fun ChatDetailScreen(
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 state = listState,
-                reverseLayout = false // Changed to false for standard top-to-bottom list
+                reverseLayout = false
             ) {
                 items(messages) { message ->
                     MessageItem(message = message)
@@ -94,17 +92,8 @@ fun ChatDetailScreen(
                 IconButton(
                     onClick = {
                         if (inputText.isNotBlank()) {
-                            val newMessage = Message(
-                                id = System.currentTimeMillis().toString(),
-                                text = inputText,
-                                isFromUser = true,
-                                timestamp = System.currentTimeMillis()
-                            )
-                            messages = messages + newMessage
+                            viewModel.sendMessage(inputText)
                             inputText = ""
-                            
-                            // Simulate AI reply (Mock)
-                            // In real app, ViewModel handles this
                         }
                     },
                     enabled = inputText.isNotBlank()

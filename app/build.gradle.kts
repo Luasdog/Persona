@@ -68,6 +68,9 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
 
+    // 图片加载库
+    implementation(libs.coil.compose)
+
     // 测试依赖
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
