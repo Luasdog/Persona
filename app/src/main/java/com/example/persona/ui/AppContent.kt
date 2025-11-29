@@ -11,7 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.ui.auth.ForgotPasswordScreen
 import com.example.persona.ui.auth.LoginScreen
 import com.example.persona.ui.auth.RegisterScreen
@@ -21,7 +21,7 @@ import com.example.persona.viewmodel.AuthViewModel
 
 @Composable
 fun AppContent() {
-    val authViewModel: AuthViewModel = viewModel()
+    val authViewModel: AuthViewModel = hiltViewModel()
     var currentScreen by remember { mutableStateOf(Screen.Login) }
     var isUserLoggedIn by remember { mutableStateOf(authViewModel.isLoggedIn()) }
 

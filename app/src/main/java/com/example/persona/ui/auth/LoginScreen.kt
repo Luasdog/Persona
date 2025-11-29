@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.viewmodel.AuthViewModel
 
 @Composable
@@ -34,7 +34,7 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
-    val viewModel: AuthViewModel = viewModel()
+    val viewModel: AuthViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
@@ -49,7 +49,7 @@ fun LoginScreen(
             // 登录成功，导航到主页
             onLoginSuccess()
         } else if (currentLoginState?.success == false) {
-            errorMessage = currentLoginState.message
+            errorMessage = currentLoginState.message ?: "登录失败"
         }
     }
 

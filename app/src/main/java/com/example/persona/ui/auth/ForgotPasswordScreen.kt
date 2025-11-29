@@ -1,6 +1,5 @@
 package com.example.persona.ui.auth
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
@@ -43,7 +42,7 @@ import kotlinx.coroutines.delay
 fun ForgotPasswordScreen(
     onNavigateToLogin: () -> Unit
 ) {
-    val viewModel: AuthViewModel = viewModel()
+    val viewModel: AuthViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState()
     val resetPasswordState by viewModel.resetPasswordState.collectAsState()
     val verificationCodeState by viewModel.verificationCodeState.collectAsState()

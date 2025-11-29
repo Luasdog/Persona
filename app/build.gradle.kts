@@ -1,3 +1,6 @@
+import java.util.Properties
+import kotlin.apply
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,6 +22,24 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+// language: kotlin
+
+
+        val localProps = Properties().apply {
+            val f = rootProject.file("local.properties")
+            if (f.exists()) f.inputStream().use { load(it) }
+        }
+        val doubaoKey: String = (localProps.getProperty("DOUBAO_API_KEY")
+            ?: project.findProperty("DOUBAO_API_KEY") as String?)
+            ?: ""
+        buildConfigField("String", "DOUBAO_API_KEY", "\"$doubaoKey\"")
+
+        val doubaoUrl: String = (localProps.getProperty("DOUBAO_API_URL")
+            ?: project.findProperty("DOUBAO_API_URL") as String?)
+            ?: ""
+        buildConfigField("String", "DOUBAO_API_URL", "\"$doubaoUrl\"")
+
     }
     buildTypes {
         release {
@@ -38,6 +59,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -67,6 +89,15 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
+
+    // Gson for parsing Doubao stream
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // Markdown渲染
+    implementation("com.github.mukeshsolanki:MarkdownView-Android:2.0.0")
+    implementation("io.noties.markwon:core:4.6.2")
+    implementation("io.noties.markwon:ext-strikethrough:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
 
     // 图片加载库
     implementation(libs.coil.compose)
