@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.persona.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
@@ -35,9 +35,9 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
-    val viewModel: AuthViewModel = viewModel()
+    val viewModel: AuthViewModel = hiltViewModel()
     val isLoading by viewModel.isLoading.collectAsState()
-    val registerState by viewModel.registerState.collectAsState()
+    val registerStateRaw by viewModel.registerState.collectAsState()
     val verificationCodeState by viewModel.verificationCodeState.collectAsState()
 
     var username by remember { mutableStateOf("") }
@@ -57,14 +57,12 @@ fun RegisterScreen(
     }
 
     // 监听注册状态变化
-    LaunchedEffect(registerState) {
-        val currentRegisterState = registerState
-        if (currentRegisterState?.success == true) {
+    LaunchedEffect(registerStateRaw) {
+        val registerState = registerStateRaw
+        if (registerState?.success == true) {
             onRegisterSuccess()
-        } else if (currentRegisterState?.success == false) {
-            currentRegisterState.message.let {
-                errorMessage = it
-            }
+        } else if (registerState?.success == false) {
+            errorMessage = registerState.message
         }
     }
     
