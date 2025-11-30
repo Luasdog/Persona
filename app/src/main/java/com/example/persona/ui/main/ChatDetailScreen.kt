@@ -28,7 +28,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun ChatDetailScreen(
     chatId: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onEditPersona: (String) -> Unit = {}
 ) {
     val viewModel: ChatViewModel = hiltViewModel()
     val messages by viewModel.messages.collectAsState()
@@ -93,6 +94,13 @@ fun ChatDetailScreen(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
+                            text = { Text("⚙️ 编辑Persona设定") },
+                            onClick = {
+                                onEditPersona(chatId)
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("📋 复制全部对话") },
                             onClick = {
                                 copyAllMessages()
@@ -119,7 +127,8 @@ fun ChatDetailScreen(
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 state = listState,
-                reverseLayout = false
+                reverseLayout = false,
+                contentPadding = PaddingValues(top = 16.dp, bottom = 8.dp)
             ) {
                 items(messages) { message ->
                     MessageItem(

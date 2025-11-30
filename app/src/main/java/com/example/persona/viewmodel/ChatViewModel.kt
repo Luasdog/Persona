@@ -18,6 +18,7 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val llmChatRepository: LLMChatRepository,
+    private val personaRepository: com.example.persona.repository.PersonaRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -68,16 +69,43 @@ class ChatViewModel @Inject constructor(
             // 2. Cancel previous streaming if any
             streamingJob?.cancel()
 
-            // 3. Build persona context from contact info
+            // 3. Build persona context from Persona settings
             val contact = contactRepository.getContactById(chatId)
             val personaContext = if (contact != null && contact.isPersona) {
-                """你是 ${contact.name}，一个AI数字人格。
-                |性格特征：${contact.bio}
-                |请以这个角色的身份，保持角色设定，友好地与用户对话。
-                |回复内容可以使用Markdown格式来增强表达效果。
-                """.trimMargin()
+                // 获取Persona完整设定
+                val persona = personaRepository.getPersonaByContactId(chatId)
+                    ?: personaRepository.ensurePersonaForContact(contact)
+
+                buildString {
+                    append("你是 ${persona.name}，一个AI数字人格。\n\n")
+                    append("## 基本设定\n")
+                    append("- **性格特征**：${persona.personality}\n")
+                    append("- **背景故事**：${persona.backstory}\n")
+                    append("- **说话语气**：${persona.tone}\n")
+
+                    if (persona.interests.isNotEmpty()) {
+                        append("- **兴趣爱好**：${persona.interests.joinToString("、")}\n")
+                    }
+                    if (persona.strengths.isNotEmpty()) {
+                        append("- **擅长领域**：${persona.strengths.joinToString("、")}\n")
+                    }
+                    if (persona.weaknesses.isNotEmpty()) {
+                        append("- **不擅长的**：${persona.weaknesses.joinToString("、")}\n")
+                    }
+
+                    append("\n## 对话要求\n")
+                    append("1. 始终保持以上角色设定，不要脱离人设\n")
+                    append("2. 用符合你性格和语气的方式回复\n")
+                    append("3. 回复可以使用Markdown格式增强表达\n")
+                    append("4. 让对话自然、有趣，体现你的个性\n")
+                }
             } else {
                 "你是一个友好且专业的AI助手。回复可以使用Markdown格式。"
+            }
+
+            // 增加对话次数
+            if (contact?.isPersona == true) {
+                personaRepository.incrementConversationCount(chatId)
             }
 
             // 4. 显示"正在输入"指示器
