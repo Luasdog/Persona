@@ -59,6 +59,90 @@ class ContactRepository @Inject constructor() {
         return _messages[chatId] ?: emptyList()
     }
 
+    /**
+     * 更新Contact信息
+     */
+    fun updateContact(contact: Contact) {
+        _contacts.update { currentList ->
+            currentList.map {
+                if (it.id == contact.id) contact else it
+            }
+        }
+
+        // 同步更新会话列表中的名字
+        _chatSessions.update { sessions ->
+            sessions.map { session ->
+                if (session.id == contact.id) {
+                    session.copy(
+                        contactName = contact.name,
+                        avatarUrl = contact.avatarUrl
+                    )
+                } else {
+                    session
+                }
+            }
+        }
+    }
+
+    /**
+     * 删除Contact和相关数据
+     */
+    fun deleteContact(contactId: String) {
+        _contacts.update { currentList ->
+            currentList.filter { it.id != contactId }
+        }
+
+        _chatSessions.update { sessions ->
+            sessions.filter { it.id != contactId }
+        }
+
+        _messages.remove(contactId)
+    }
+
+    /**
+     * 检查联系人是否存在
+     */
+    fun isContactExists(contactId: String): Boolean {
+        return _contacts.value.any { it.id == contactId }
+    }
+
+    /**
+     * 根据ID获取联系人（如果不存在返回null）
+     */
+    fun getContactByIdOrNull(contactId: String): Contact? {
+        return _contacts.value.find { it.id == contactId }
+    }
+
+    /**
+     * 从Post作者信息添加为好友
+     * @param authorId 作者ID
+     * @param authorName 作者名字
+     * @param authorAvatar 作者头像
+     * @param authorBio 作者简介（可选）
+     */
+    fun addFriendFromPost(
+        authorId: String,
+        authorName: String,
+        authorAvatar: String?,
+        authorBio: String = "来自社交广场的好友"
+    ) {
+        // 检查是否已经存在
+        if (isContactExists(authorId)) {
+            return
+        }
+
+        // 创建新的Contact
+        val newContact = Contact(
+            id = authorId,
+            name = authorName,
+            bio = authorBio,
+            avatarUrl = authorAvatar,
+            isPersona = true
+        )
+
+        addContact(newContact)
+    }
+
     fun sendMessage(chatId: String, text: String) {
         val newMessage = Message(
             id = System.currentTimeMillis().toString(),
