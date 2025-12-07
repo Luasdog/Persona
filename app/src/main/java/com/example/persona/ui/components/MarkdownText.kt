@@ -239,6 +239,8 @@ fun TypingIndicator(
 
 /**
  * 流式文本显示（带打字机效果）
+ * 在流式输出时显示原始文本（避免不完整的Markdown显示格式符号）
+ * 完成后再渲染Markdown格式
  */
 @Composable
 fun StreamingMarkdownText(
@@ -247,22 +249,36 @@ fun StreamingMarkdownText(
     modifier: Modifier = Modifier,
     isFromUser: Boolean = false
 ) {
+    val color = if (isFromUser) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Column(modifier = modifier) {
         if (text.isNotEmpty()) {
-            MarkdownMessageText(
-                markdown = text,
-                isFromUser = isFromUser
-            )
-        }
-
-        // 如果还在流式输出，显示光标
-        if (!isComplete && text.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "▊",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            if (isComplete) {
+                // 流式输出完成，使用 Markdown 渲染
+                MarkdownMessageText(
+                    markdown = text,
+                    isFromUser = isFromUser
+                )
+            } else {
+                // 流式输出中，使用普通文本显示（避免显示不完整的 Markdown 格式符号）
+                Text(
+                    text = text,
+                    color = color,
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = 20.sp
+                )
+                // 显示光标
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "▊",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
