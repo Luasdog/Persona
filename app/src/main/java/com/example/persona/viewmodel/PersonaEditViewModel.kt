@@ -14,7 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PersonaEditViewModel @Inject constructor(
     private val personaRepository: PersonaRepository,
-    private val contactRepository: com.example.persona.repository.ContactRepository
+    private val contactRepository: com.example.persona.repository.ContactRepository,
+    private val aiModelManager: com.example.persona.network.AIModelManager
 ) : ViewModel() {
 
     data class UiState(
@@ -24,6 +25,7 @@ class PersonaEditViewModel @Inject constructor(
         val saveSuccess: Boolean = false,
         val errorMessage: String? = null,
         val showDeleteDialog: Boolean = false,
+        val isGeneratingAvatar: Boolean = false,
 
         // 编辑中的字段
         val editedName: String = "",
@@ -36,7 +38,8 @@ class PersonaEditViewModel @Inject constructor(
         val editedArtStyle: String = "",
         val editedMusicMood: String = "",
         val editedVoice: String = "",
-        val editedGrowthNotes: String = ""
+        val editedGrowthNotes: String = "",
+        val editedAvatarUrl: String? = null
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -79,7 +82,8 @@ class PersonaEditViewModel @Inject constructor(
                         editedArtStyle = persona.artStyle ?: "",
                         editedMusicMood = persona.musicMood ?: "",
                         editedVoice = persona.preferredVoice ?: "",
-                        editedGrowthNotes = persona.growthNotes
+                        editedGrowthNotes = persona.growthNotes,
+                        editedAvatarUrl = persona.avatarUrl
                     )
                 } else {
                     android.util.Log.e("PersonaEditVM", "Cannot find or create persona for ID: $personaId")
@@ -109,6 +113,7 @@ class PersonaEditViewModel @Inject constructor(
             try {
                 val updatedPersona = currentPersona.copy(
                     name = _uiState.value.editedName.trim(),
+                    avatarUrl = _uiState.value.editedAvatarUrl,
                     personality = _uiState.value.editedPersonality.trim(),
                     backstory = _uiState.value.editedBackstory.trim(),
                     tone = _uiState.value.editedTone.trim(),
@@ -224,6 +229,90 @@ class PersonaEditViewModel @Inject constructor(
 
     fun updateGrowthNotes(notes: String) {
         _uiState.value = _uiState.value.copy(editedGrowthNotes = notes)
+    }
+
+    /**
+     * 更新头像
+     */
+    fun updateAvatar(avatarUrl: String) {
+        _uiState.value = _uiState.value.copy(
+            editedAvatarUrl = avatarUrl,
+            persona = _uiState.value.persona?.copy(avatarUrl = avatarUrl)
+        )
+    }
+
+    /**
+     * 根据当前 Persona 设定生成头像
+     */
+    fun generateAvatar() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isGeneratingAvatar = true)
+
+                val currentState = _uiState.value
+                android.util.Log.d("PersonaEditVM", "Generating image for: ${currentState.editedName}")
+
+                // 构建图片生成提示词
+                val prompt = buildString {
+                    append("根据以下设定生成一张图片：")
+//                    append("名为${currentState.editedName}的角色，")
+                    append("性格特征：${currentState.editedPersonality}。")
+
+                    // 如果有背景故事，加入更多细节
+                    if (currentState.editedBackstory.isNotBlank()) {
+                        append("背景故事：${currentState.editedBackstory}。")
+                    }
+
+                    // 如果有性格描述，加入更多细节
+                    if (currentState.editedTone.isNotBlank()) {
+                        append("性格描述：${currentState.editedTone}。")
+                    }
+
+                    // 如果有兴趣爱好，加入更多细节
+                    if (currentState.editedInterests.isNotBlank()) {
+                        append("兴趣爱好：${currentState.editedInterests}。")
+                    }
+
+                    // 如果有能力特征，加入更多细节
+                    if (currentState.editedStrengths.isNotBlank()) {
+                        append("能力特征：${currentState.editedStrengths}。")
+                    }
+                    
+                    // 如果有弱点，加入更多细节
+                    if (currentState.editedWeaknesses.isNotBlank()) {
+                        append("弱点：${currentState.editedWeaknesses}。")
+                    }
+                }
+
+                // 调用图片生成 API
+                val result = aiModelManager.generateImage(
+                    prompt = prompt,
+                    style = currentState.editedArtStyle.ifBlank { null },
+                    size = "1024x1024"
+                )
+
+                if (result.success && result.imageUrl != null) {
+                    android.util.Log.d("PersonaEditVM", "Avatar generated: ${result.imageUrl}")
+                    _uiState.value = _uiState.value.copy(
+                        isGeneratingAvatar = false,
+                        editedAvatarUrl = result.imageUrl,
+                        persona = _uiState.value.persona?.copy(avatarUrl = result.imageUrl)
+                    )
+                } else {
+                    android.util.Log.e("PersonaEditVM", "Avatar generation failed: ${result.errorMessage}")
+                    _uiState.value = _uiState.value.copy(
+                        isGeneratingAvatar = false,
+                        errorMessage = "头像生成失败：${result.errorMessage}"
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("PersonaEditVM", "Error generating avatar", e)
+                _uiState.value = _uiState.value.copy(
+                    isGeneratingAvatar = false,
+                    errorMessage = "头像生成异常：${e.message}"
+                )
+            }
+        }
     }
 
     fun showDeleteConfirmation() {

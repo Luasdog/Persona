@@ -288,4 +288,59 @@ class ContactRepository @Inject constructor() {
     fun getContactById(id: String): Contact? {
         return _contacts.value.find { it.id == id }
     }
+
+    /**
+     * 添加图片生成中的指示器
+     */
+    fun addImageGeneratingIndicator(chatId: String, text: String) {
+        val list = _messages.getOrPut(chatId) { mutableListOf() }
+        // 移除已存在的指示器
+        list.removeAll { it.id == "_image_generating" }
+
+        val generatingMsg = Message(
+            id = "_image_generating",
+            text = text,
+            isFromUser = false,
+            timestamp = System.currentTimeMillis(),
+            isTyping = false,
+            isGenerating = true,
+            messageType = com.example.persona.model.MessageType.TEXT
+        )
+        list.add(generatingMsg)
+    }
+
+    /**
+     * 移除图片生成中的指示器
+     */
+    fun removeImageGeneratingIndicator(chatId: String) {
+        val list = _messages.getOrPut(chatId) { mutableListOf() }
+        list.removeAll { it.id == "_image_generating" }
+    }
+
+    /**
+     * 添加图片消息
+     */
+    fun addImageMessage(
+        chatId: String,
+        imageUrl: String,
+        caption: String = "",
+        width: Int? = null,
+        height: Int? = null
+    ) {
+        val newMessage = Message(
+            id = System.currentTimeMillis().toString(),
+            text = caption,
+            isFromUser = false,
+            timestamp = System.currentTimeMillis(),
+            isTyping = false,
+            isMarkdown = false,
+            messageType = com.example.persona.model.MessageType.IMAGE,
+            mediaContent = com.example.persona.model.MediaContent(
+                url = imageUrl,
+                width = width,
+                height = height
+            )
+        )
+        saveMessage(chatId, newMessage)
+    }
 }

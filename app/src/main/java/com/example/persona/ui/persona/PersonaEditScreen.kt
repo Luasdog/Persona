@@ -129,6 +129,21 @@ fun PersonaEditForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // 头像选择
+        AvatarSelector(
+            modifier = Modifier.fillMaxWidth(),
+            currentAvatarUrl = uiState.persona?.avatarUrl,
+            onAvatarSelected = { url ->
+                viewModel.updateAvatar(url)
+            },
+            onGenerateAvatar = {
+                viewModel.generateAvatar()
+            },
+            isGenerating = uiState.isGeneratingAvatar
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         // 基础信息
         Text(
             "基础信息",
@@ -212,47 +227,6 @@ fun PersonaEditForm(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // AI偏好设置
-        Text(
-            "AI能力偏好",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            "配置这个Persona的专属AI能力",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        // 艺术风格
-        OutlinedTextField(
-            value = uiState.editedArtStyle,
-            onValueChange = { viewModel.updateArtStyle(it) },
-            label = { Text("艺术风格（图片生成）") },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("例如：动漫、赛博朋克、水彩画") }
-        )
-
-        // 音乐情绪
-        OutlinedTextField(
-            value = uiState.editedMusicMood,
-            onValueChange = { viewModel.updateMusicMood(it) },
-            label = { Text("音乐情绪（音乐生成）") },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("例如：平静、充满活力、忧郁") }
-        )
-
-        // 语音偏好
-        OutlinedTextField(
-            value = uiState.editedVoice,
-            onValueChange = { viewModel.updateVoice(it) },
-            label = { Text("语音类型（语音合成）") },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("例如：温柔女声、低沉男声") }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // 成长记录
         Text(

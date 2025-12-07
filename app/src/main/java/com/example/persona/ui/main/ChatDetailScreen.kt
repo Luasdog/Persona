@@ -202,6 +202,82 @@ fun MessageItem(
                     modifier = Modifier.padding(12.dp)
                 )
             }
+        } else if (message.isGenerating) {
+            // 正在生成内容（图片、音乐等）
+            Surface(
+                color = MaterialTheme.colorScheme.tertiaryContainer,
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomStart = 4.dp,
+                    bottomEnd = 16.dp
+                ),
+                modifier = Modifier.widthIn(min = 120.dp, max = 280.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = message.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
+        } else if (message.messageType == com.example.persona.model.MessageType.IMAGE) {
+            // 图片消息
+            Column(
+                horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start
+            ) {
+                // 显示图片
+                message.mediaContent?.url?.let { imageUrl ->
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.widthIn(max = 300.dp)
+                    ) {
+                        coil.compose.AsyncImage(
+                            model = imageUrl,
+                            contentDescription = "Generated Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 400.dp),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                        )
+                    }
+                }
+
+                // 显示说明文字（如果有）
+                if (message.text.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        color = if (message.isFromUser) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.widthIn(max = 280.dp)
+                    ) {
+                        Text(
+                            text = message.text,
+                            modifier = Modifier.padding(8.dp),
+                            color = if (message.isFromUser) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
         } else {
             // 普通消息
             Box {

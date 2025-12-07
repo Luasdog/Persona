@@ -59,9 +59,15 @@ object AppModule {
         val douKey = if (douKeyFromBuild.isNotBlank()) douKeyFromBuild else (System.getenv("DOUBAO_API_KEY") ?: "")
 
         if (douKey.isNotBlank()) {
+            // 注册豆包文本生成客户端
             val doubaoClient = DoubaoStreamingClient()
             manager.registerClient("doubao", doubaoClient)
             Log.d(TAG, "Registered Doubao client for text generation")
+
+            // 注册豆包图片生成客户端
+            val doubaoImageClient = com.example.persona.network.DoubaoImageClient()
+            manager.registerClient("doubao-image", doubaoImageClient)
+            Log.d(TAG, "Registered Doubao Image client for image generation")
         }
 
         // TODO: 注册其他AI客户端

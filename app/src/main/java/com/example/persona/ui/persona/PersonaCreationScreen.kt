@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.example.persona.viewmodel.PersonaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,15 +85,33 @@ fun PersonaCreationScreen(
                 color = MaterialTheme.colorScheme.secondary
             )
             
-            // 头像展示
-            if (avatarUrl != null) {
-                AsyncImage(
-                    model = avatarUrl,
-                    contentDescription = "Avatar",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
+            // 头像选择组件
+            AvatarSelector(
+                modifier = Modifier.fillMaxWidth(),
+                currentAvatarUrl = avatarUrl,
+                onAvatarSelected = { url ->
+                    avatarUrl = url
+                    viewModel.clearGeneratedAvatar()
+                },
+                onGenerateAvatar = {
+                    // 根据当前设定生成图片
+                    viewModel.generateAvatarFromPersona(
+                        name = name.ifBlank { "未命名" },
+                        personality = personality.ifBlank { "友好、智慧" },
+                        backstory = backstory,
+                        interests = interests,
+                        strengths = strengths,
+                        weaknesses = weaknesses
+                    )
+                },
+                isGenerating = uiState.isGeneratingAvatar
+            )
+
+            // 监听 AI 生成的头像
+            LaunchedEffect(uiState.generatedAvatarUrl) {
+                uiState.generatedAvatarUrl?.let {
+                    avatarUrl = it
+                }
             }
 
             // 基础信息
@@ -173,44 +190,6 @@ fun PersonaCreationScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // AI偏好设置
-            Text(
-                "AI能力偏好",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                "配置这个Persona的专属AI能力",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            OutlinedTextField(
-                value = artStyle,
-                onValueChange = { artStyle = it },
-                label = { Text("艺术风格（图片生成）") },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("例如：动漫、赛博朋克、水彩画") }
-            )
-
-            OutlinedTextField(
-                value = musicMood,
-                onValueChange = { musicMood = it },
-                label = { Text("音乐情绪（音乐生成）") },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("例如：平静、充满活力、忧郁") }
-            )
-
-            OutlinedTextField(
-                value = voice,
-                onValueChange = { voice = it },
-                label = { Text("语音类型（语音合成）") },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("例如：温柔女声、低沉男声") }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             // 提示信息
             Text(
@@ -235,9 +214,6 @@ fun PersonaCreationScreen(
                         interests,
                         strengths,
                         weaknesses,
-                        artStyle,
-                        musicMood,
-                        voice
                     )
                     onPersonaCreated()
                 },
