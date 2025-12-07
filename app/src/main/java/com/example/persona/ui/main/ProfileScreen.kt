@@ -82,7 +82,7 @@ fun ProfileScreen(onLogout: () -> Unit) {
 
         // Bio/Status
         Text(
-            text = "Creating worlds with AI.",
+            text = "与 AI 共创世界",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -105,7 +105,10 @@ fun MainScreen(onLogout: () -> Unit) {
                 val chatId = backStackEntry.arguments?.getString("chatId") ?: return@composable
                 ChatDetailScreen(
                     chatId = chatId,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onEditPersona = { personaId ->
+                        navController.navigate("edit_persona/$personaId")
+                    }
                 )
             }
 
@@ -113,6 +116,18 @@ fun MainScreen(onLogout: () -> Unit) {
                 PersonaCreationScreen(
                     onBackClick = { navController.popBackStack() },
                     onPersonaCreated = { navController.popBackStack() }
+                )
+            }
+
+            composable("edit_persona/{personaId}") { backStackEntry ->
+                val personaId = backStackEntry.arguments?.getString("personaId") ?: return@composable
+                com.example.persona.ui.persona.PersonaEditScreen(
+                    personaId = personaId,
+                    onBackClick = { navController.popBackStack() },
+                    onDeleteClick = {
+                        navController.popBackStack()
+                        navController.popBackStack() // 返回到联系人列表
+                    }
                 )
             }
         }

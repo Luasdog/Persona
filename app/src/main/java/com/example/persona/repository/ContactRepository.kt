@@ -59,6 +59,90 @@ class ContactRepository @Inject constructor() {
         return _messages[chatId] ?: emptyList()
     }
 
+    /**
+     * 更新Contact信息
+     */
+    fun updateContact(contact: Contact) {
+        _contacts.update { currentList ->
+            currentList.map {
+                if (it.id == contact.id) contact else it
+            }
+        }
+
+        // 同步更新会话列表中的名字
+        _chatSessions.update { sessions ->
+            sessions.map { session ->
+                if (session.id == contact.id) {
+                    session.copy(
+                        contactName = contact.name,
+                        avatarUrl = contact.avatarUrl
+                    )
+                } else {
+                    session
+                }
+            }
+        }
+    }
+
+    /**
+     * 删除Contact和相关数据
+     */
+    fun deleteContact(contactId: String) {
+        _contacts.update { currentList ->
+            currentList.filter { it.id != contactId }
+        }
+
+        _chatSessions.update { sessions ->
+            sessions.filter { it.id != contactId }
+        }
+
+        _messages.remove(contactId)
+    }
+
+    /**
+     * 检查联系人是否存在
+     */
+    fun isContactExists(contactId: String): Boolean {
+        return _contacts.value.any { it.id == contactId }
+    }
+
+    /**
+     * 根据ID获取联系人（如果不存在返回null）
+     */
+    fun getContactByIdOrNull(contactId: String): Contact? {
+        return _contacts.value.find { it.id == contactId }
+    }
+
+    /**
+     * 从Post作者信息添加为好友
+     * @param authorId 作者ID
+     * @param authorName 作者名字
+     * @param authorAvatar 作者头像
+     * @param authorBio 作者简介（可选）
+     */
+    fun addFriendFromPost(
+        authorId: String,
+        authorName: String,
+        authorAvatar: String?,
+        authorBio: String = "来自社交广场的好友"
+    ) {
+        // 检查是否已经存在
+        if (isContactExists(authorId)) {
+            return
+        }
+
+        // 创建新的Contact
+        val newContact = Contact(
+            id = authorId,
+            name = authorName,
+            bio = authorBio,
+            avatarUrl = authorAvatar,
+            isPersona = true
+        )
+
+        addContact(newContact)
+    }
+
     fun sendMessage(chatId: String, text: String) {
         val newMessage = Message(
             id = System.currentTimeMillis().toString(),
@@ -203,5 +287,60 @@ class ContactRepository @Inject constructor() {
     
     fun getContactById(id: String): Contact? {
         return _contacts.value.find { it.id == id }
+    }
+
+    /**
+     * 添加图片生成中的指示器
+     */
+    fun addImageGeneratingIndicator(chatId: String, text: String) {
+        val list = _messages.getOrPut(chatId) { mutableListOf() }
+        // 移除已存在的指示器
+        list.removeAll { it.id == "_image_generating" }
+
+        val generatingMsg = Message(
+            id = "_image_generating",
+            text = text,
+            isFromUser = false,
+            timestamp = System.currentTimeMillis(),
+            isTyping = false,
+            isGenerating = true,
+            messageType = com.example.persona.model.MessageType.TEXT
+        )
+        list.add(generatingMsg)
+    }
+
+    /**
+     * 移除图片生成中的指示器
+     */
+    fun removeImageGeneratingIndicator(chatId: String) {
+        val list = _messages.getOrPut(chatId) { mutableListOf() }
+        list.removeAll { it.id == "_image_generating" }
+    }
+
+    /**
+     * 添加图片消息
+     */
+    fun addImageMessage(
+        chatId: String,
+        imageUrl: String,
+        caption: String = "",
+        width: Int? = null,
+        height: Int? = null
+    ) {
+        val newMessage = Message(
+            id = System.currentTimeMillis().toString(),
+            text = caption,
+            isFromUser = false,
+            timestamp = System.currentTimeMillis(),
+            isTyping = false,
+            isMarkdown = false,
+            messageType = com.example.persona.model.MessageType.IMAGE,
+            mediaContent = com.example.persona.model.MediaContent(
+                url = imageUrl,
+                width = width,
+                height = height
+            )
+        )
+        saveMessage(chatId, newMessage)
     }
 }

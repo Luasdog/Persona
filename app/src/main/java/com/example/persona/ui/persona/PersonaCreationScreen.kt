@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.example.persona.viewmodel.PersonaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +26,13 @@ fun PersonaCreationScreen(
     var name by remember { mutableStateOf("") }
     var personality by remember { mutableStateOf("") }
     var backstory by remember { mutableStateOf("") }
-    var tone by remember { mutableStateOf("") } // e.g. Casual, Formal
+    var tone by remember { mutableStateOf("") }
+    var interests by remember { mutableStateOf("") }
+    var strengths by remember { mutableStateOf("") }
+    var weaknesses by remember { mutableStateOf("") }
+    var artStyle by remember { mutableStateOf("") }
+    var musicMood by remember { mutableStateOf("") }
+    var voice by remember { mutableStateOf("") }
     var avatarUrl by remember { mutableStateOf<String?>(null) }
 
     // Observe AI generation
@@ -37,6 +42,12 @@ fun PersonaCreationScreen(
             personality = it.personality
             backstory = it.backstory
             tone = it.tone
+            interests = it.interests.joinToString(", ")
+            strengths = it.strengths.joinToString(", ")
+            weaknesses = it.weaknesses.joinToString(", ")
+            artStyle = it.artStyle ?: ""
+            musicMood = it.musicMood ?: ""
+            voice = it.preferredVoice ?: ""
             avatarUrl = it.avatarUrl
             viewModel.consumeGeneratedSettings()
         }
@@ -74,36 +85,56 @@ fun PersonaCreationScreen(
                 color = MaterialTheme.colorScheme.secondary
             )
             
-            // 头像展示
-            if (avatarUrl != null) {
-                AsyncImage(
-                    model = avatarUrl,
-                    contentDescription = "Avatar",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
+            // 头像选择组件
+            AvatarSelector(
+                modifier = Modifier.fillMaxWidth(),
+                currentAvatarUrl = avatarUrl,
+                onAvatarSelected = { url ->
+                    avatarUrl = url
+                    viewModel.clearGeneratedAvatar()
+                },
+                onGenerateAvatar = {
+                    // 根据当前设定生成图片
+                    viewModel.generateAvatarFromPersona(
+                        name = name.ifBlank { "未命名" },
+                        personality = personality.ifBlank { "友好、智慧" },
+                        backstory = backstory,
+                        interests = interests,
+                        strengths = strengths,
+                        weaknesses = weaknesses
+                    )
+                },
+                isGenerating = uiState.isGeneratingAvatar
+            )
+
+            // 监听 AI 生成的头像
+            LaunchedEffect(uiState.generatedAvatarUrl) {
+                uiState.generatedAvatarUrl?.let {
+                    avatarUrl = it
+                }
             }
+
+            // 基础信息
+            Text(
+                "基础信息",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
 
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("名称") },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("名字") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
             OutlinedTextField(
                 value = personality,
                 onValueChange = { personality = it },
-                label = { Text("性格关键词 (如：乐观、高冷)") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = tone,
-                onValueChange = { tone = it },
-                label = { Text("说话风格 (如：正式、幽默)") },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("性格特征") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("例如：热情开朗、理性冷静、幽默风趣") }
             )
 
             OutlinedTextField(
@@ -111,7 +142,61 @@ fun PersonaCreationScreen(
                 onValueChange = { backstory = it },
                 label = { Text("背景故事") },
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3
+                minLines = 3,
+                maxLines = 5,
+                placeholder = { Text("描述这个Persona的来历、经历等") }
+            )
+
+            OutlinedTextField(
+                value = tone,
+                onValueChange = { tone = it },
+                label = { Text("说话语气") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("例如：正式、随意、文艺、科技感") }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 兴趣与特长
+            Text(
+                "兴趣与特长",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            OutlinedTextField(
+                value = interests,
+                onValueChange = { interests = it },
+                label = { Text("兴趣爱好") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("用逗号分隔，例如：编程,科幻小说,音乐") }
+            )
+
+            OutlinedTextField(
+                value = strengths,
+                onValueChange = { strengths = it },
+                label = { Text("擅长领域") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("用逗号分隔，例如：Python,数据分析,创意写作") }
+            )
+
+            OutlinedTextField(
+                value = weaknesses,
+                onValueChange = { weaknesses = it },
+                label = { Text("不擅长/弱点") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("用逗号分隔，让Persona更真实") }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+
+            // 提示信息
+            Text(
+                "💡 提示：修改设定后，AI将根据新的人设进行对话",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 8.dp)
             )
             
             if (uiState.isLoading) {
@@ -120,7 +205,16 @@ fun PersonaCreationScreen(
 
             Button(
                 onClick = {
-                    viewModel.createPersona(name, personality, backstory, tone, avatarUrl)
+                    viewModel.createPersona(
+                        name,
+                        personality,
+                        backstory,
+                        tone,
+                        avatarUrl,
+                        interests,
+                        strengths,
+                        weaknesses,
+                    )
                     onPersonaCreated()
                 },
                 modifier = Modifier.fillMaxWidth(),
